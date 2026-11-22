@@ -15,7 +15,7 @@ export const DEFAULT_SETTINGS: Settings = {
 };
 
 // Quick-pick lengths on the timer screen (they set the focus length in settings).
-export const FOCUS_CHOICES: number[] = [15, 25, 45, 60];
+export const FOCUS_CHOICES: number[] = [1, 15, 25, 45, 60];
 
 // If you reset a focus session early, only log it if at least this much time passed.
 export const MIN_LOG_SECONDS = 60;

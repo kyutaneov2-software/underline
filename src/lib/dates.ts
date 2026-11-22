@@ -32,3 +32,18 @@ export function formatDateLong(key: string): string {
     year: "numeric",
   });
 }
+
+export function addDays(d: Date, n: number): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+}
+
+// "Nov 16 - 22" or "Nov 30 - Dec 6" for the week starting at `start`.
+export function formatWeekRange(start: Date): string {
+  const end = addDays(start, 6);
+  const month = (d: Date) =>
+    d.toLocaleDateString(undefined, { month: "short" });
+  const sameMonth = start.getMonth() === end.getMonth();
+  return sameMonth
+    ? `${month(start)} ${start.getDate()} - ${end.getDate()}`
+    : `${month(start)} ${start.getDate()} - ${month(end)} ${end.getDate()}`;
+}

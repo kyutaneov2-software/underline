@@ -108,3 +108,81 @@ export async function getFocusSecondsBySubject(
   });
   return map;
 }
+
+export type WeekRow = {
+  day: string; // 'YYYY-MM-DD'
+  subjectId: number | null;
+  name: string | null;
+  color: string | null;
+  seconds: number;
+};
+
+// Completed focus seconds per day and subject in [startMs, endMs). The join keeps names and
+// colors of subjects that were archived later, so old weeks still read correctly.
+export async function getWeekRows(
+  startMs: number,
+  endMs: number,
+): Promise<WeekRow[]> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<{
+    day: string;
+    subject_id: number | null;
+    name: string | null;
+    color: string | null;
+    total: number;
+  }>(
+    `SELECT date(s.started_at / 1000, 'unixepoch', 'localtime') AS day,
+            s.subject_id AS subject_id,
+            sub.name AS name,
+            sub.color AS color,
+            SUM(s.duration_sec) AS total
+       FROM sessions s
+       LEFT JOIN subjects sub ON sub.id = s.subject_id
+      WHERE s.completed = 1 AND s.started_at >= ? AND s.started_at < ?
+      GROUP BY day, s.subject_id`,
+    [startMs, endMs],
+  );
+  return rows.map((r) => ({
+    day: r.day,
+    subjectId: r.subject_id,
+    name: r.name,
+    color: r.color,
+    seconds: r.total,
+  }));
+}
+
+export type SessionLogItem = {
+  id: number;
+  startedAt: number;
+  durationSec: number;
+  completed: boolean;
+  subjectName: string | null;
+  subjectColor: string | null;
+};
+
+export async function getSessionLog(limit = 300): Promise<SessionLogItem[]> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<{
+    id: number;
+    started_at: number;
+    duration_sec: number;
+    completed: number;
+    name: string | null;
+    color: string | null;
+  }>(
+    `SELECT s.id, s.started_at, s.duration_sec, s.completed, sub.name AS name, sub.color AS color
+       FROM sessions s
+       LEFT JOIN subjects sub ON sub.id = s.subject_id
+      ORDER BY s.started_at DESC
+      LIMIT ?`,
+    [limit],
+  );
+  return rows.map((r) => ({
+    id: r.id,
+    startedAt: r.started_at,
+    durationSec: r.duration_sec,
+    completed: r.completed === 1,
+    subjectName: r.name,
+    subjectColor: r.color,
+  }));
+}

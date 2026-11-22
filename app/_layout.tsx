@@ -61,6 +61,11 @@ export default function RootLayout() {
                       name="subject"
                       options={{ presentation: "modal" }}
                     />
+                    <Stack.Screen
+                      name="recap"
+                      options={{ presentation: "modal" }}
+                    />
+                    <Stack.Screen name="log" />
                   </Stack>
                 </Themed>
               </TimerProvider>
