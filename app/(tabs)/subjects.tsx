@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { WEEK_STARTS_ON } from "../../src/config";
+import { useSettings } from "../../src/context/SettingsContext";
 import { useSubjects } from "../../src/context/SubjectsContext";
 import { useTheme } from "../../src/context/ThemeContext";
 import {
@@ -41,12 +41,13 @@ export default function SubjectsScreen() {
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const router = useRouter();
   const { subjects } = useSubjects();
+  const { settings } = useSettings();
 
   const [weekSec, setWeekSec] = useState<Record<number, number>>({});
   const load = useCallback(async () => {
-    const since = startOfWeek(new Date(), WEEK_STARTS_ON).getTime();
+    const since = startOfWeek(new Date(), settings.weekStartsOn).getTime();
     setWeekSec(await getFocusSecondsBySubject(since));
-  }, []);
+  }, [settings.weekStartsOn]);
   useEffect(() => {
     load();
     return onSessionsChanged(load);
@@ -75,7 +76,7 @@ export default function SubjectsScreen() {
                 router.push({
                   pathname: "/subject",
                   params: { id: String(s.id) },
-                } as any)
+                })
               }
               accessibilityRole="button"
               accessibilityLabel={`${s.name}. ${weekText(s, seconds)}. ${exam.text}`}
@@ -106,7 +107,7 @@ export default function SubjectsScreen() {
 
         <Pressable
           style={styles.add}
-          onPress={() => router.push("/subject" as any)}
+          onPress={() => router.push("/subject")}
           accessibilityRole="button"
         >
           <Text style={styles.addText}>{t.subjects.add}</Text>

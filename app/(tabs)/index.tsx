@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { RollingClock } from "../../src/components/RollingClock";
-import { useThemeToggle } from "../../src/components/ThemeReveal";
 import { UnderlineBar } from "../../src/components/UnderlineBar";
 import { APP_NAME, FOCUS_CHOICES } from "../../src/config";
 import { useSettings } from "../../src/context/SettingsContext";
@@ -20,7 +19,6 @@ const KEEP_AWAKE_TAG = "underline-timer";
 export default function TimerScreen() {
   const { colors, isDark } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
-  const { toggleTheme } = useThemeToggle();
   const timer = useTimerContext();
   const { settings, update } = useSettings();
   const { subjects, byId } = useSubjects();
@@ -89,19 +87,6 @@ export default function TimerScreen() {
       >
         <View style={styles.topRow}>
           <Text style={styles.wordmark}>{APP_NAME}</Text>
-          {/* Temporary home for the theme switch; it moves to Settings in step 5. */}
-          <Pressable
-            style={styles.themeButton}
-            onPress={(e) =>
-              toggleTheme(e.nativeEvent.pageX, e.nativeEvent.pageY)
-            }
-            accessibilityRole="button"
-            accessibilityLabel={isDark ? t.theme.toLight : t.theme.toNight}
-          >
-            <Text style={styles.themeButtonText}>
-              {isDark ? t.theme.toLight : t.theme.toNight}
-            </Text>
-          </Pressable>
         </View>
 
         <View style={styles.modeRow}>
@@ -252,17 +237,6 @@ const makeStyles = (c: Palette) =>
       alignItems: "center",
     },
     wordmark: { color: c.ink, fontFamily: fonts.bold, fontSize: 16 },
-    themeButton: {
-      height: 36,
-      paddingHorizontal: 14,
-      borderRadius: radius.pill,
-      borderWidth: 1,
-      borderColor: c.line,
-      backgroundColor: c.surface,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    themeButtonText: { color: c.ink, fontFamily: fonts.medium, fontSize: 13 },
     modeRow: { flexDirection: "row", gap: space.sm, marginTop: space.md },
     stage: { marginTop: space.lg },
     label: { color: c.muted, fontFamily: fonts.regular, fontSize: 14 },

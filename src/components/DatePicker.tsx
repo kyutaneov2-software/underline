@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useSettings } from "../context/SettingsContext";
 import { useTheme } from "../context/ThemeContext";
 import { parseDateKey, toDateKey } from "../lib/dates";
 import { t } from "../strings";
@@ -13,6 +14,8 @@ type Props = {
 // A small month calendar in the app's own style. Days before today can't be picked.
 export function DatePicker({ value, onChange }: Props) {
   const { colors } = useTheme();
+  const { settings } = useSettings();
+  const weekStart = settings.weekStartsOn;
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const today = new Date();
@@ -23,7 +26,8 @@ export function DatePicker({ value, onChange }: Props) {
     month: start.getMonth(),
   });
 
-  const offset = (new Date(view.year, view.month, 1).getDay() + 6) % 7; // weeks start on Monday
+  const offset =
+    (new Date(view.year, view.month, 1).getDay() - weekStart + 7) % 7;
   const daysInMonth = new Date(view.year, view.month + 1, 0).getDate();
   const cells: (number | null)[] = [
     ...Array.from({ length: offset }, () => null),
@@ -75,7 +79,10 @@ export function DatePicker({ value, onChange }: Props) {
       </View>
 
       <View style={styles.grid}>
-        {t.weekdaysShort.map((d, i) => (
+        {Array.from(
+          { length: 7 },
+          (_, i) => t.weekdaysShort[(weekStart + 6 + i) % 7],
+        ).map((d, i) => (
           <View key={`w${i}`} style={styles.cell}>
             <Text style={styles.weekday}>{d}</Text>
           </View>

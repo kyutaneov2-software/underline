@@ -11,7 +11,9 @@ export const DEFAULT_SETTINGS: Settings = {
   keepAwake: false,
   haptics: true,
   dailyGoalMin: 120,
+  weekStartsOn: 1,
   theme: "system",
+  introDone: false,
 };
 
 // Quick-pick lengths on the timer screen (they set the focus length in settings).
@@ -29,6 +31,3 @@ export const SUBJECT_COLORS: string[] = [
   "#64748B",
 ];
 export const MAX_SUBJECT_NAME = 24;
-
-// First day of the week: 0 = Sunday, 1 = Monday. A setting for this arrives in step 5.
-export const WEEK_STARTS_ON = 1;

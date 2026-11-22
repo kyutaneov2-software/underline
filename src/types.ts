@@ -35,7 +35,9 @@ export type Settings = {
   keepAwake: boolean; // keep the screen on while a timer runs
   haptics: boolean;
   dailyGoalMin: number;
+  weekStartsOn: 0 | 1; // 0 = Sunday, 1 = Monday
   theme: ThemeChoice;
+  introDone: boolean; // the first-launch intro has been completed or skipped
 };
 
 export type TimerState = {

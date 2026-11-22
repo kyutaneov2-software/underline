@@ -58,6 +58,10 @@ export default function RootLayout() {
                   <Stack screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="(tabs)" />
                     <Stack.Screen
+                      name="intro"
+                      options={{ gestureEnabled: false, animation: "fade" }}
+                    />
+                    <Stack.Screen
                       name="subject"
                       options={{ presentation: "modal" }}
                     />

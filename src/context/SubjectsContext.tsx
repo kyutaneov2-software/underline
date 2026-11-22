@@ -49,7 +49,8 @@ export function SubjectsProvider({ children }: { children: ReactNode }) {
       if (!name) return t.errors.nameEmpty;
       if (name.length > MAX_SUBJECT_NAME)
         return t.errors.nameTooLong(MAX_SUBJECT_NAME);
-      const taken = subjects.some(
+      const current = await getSubjects();
+      const taken = current.some(
         (s) => s.id !== draft.id && s.name.toLowerCase() === name.toLowerCase(),
       );
       if (taken) return t.errors.nameTaken;
@@ -76,16 +77,17 @@ export function SubjectsProvider({ children }: { children: ReactNode }) {
         return t.errors.saveFailed;
       }
     },
-    [subjects, reload],
+    [reload],
   );
 
   const removeSubject = useCallback(
     async (id: number) => {
-      if (subjects.length <= 1) return; // always keep at least one subject
+      const current = await getSubjects();
+      if (current.length <= 1) return; // always keep at least one subject
       await archiveSubject(id);
       await reload();
     },
-    [subjects, reload],
+    [reload],
   );
 
   const byId = useCallback(

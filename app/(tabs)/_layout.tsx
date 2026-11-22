@@ -1,23 +1,18 @@
-import { Tabs } from "expo-router";
-import { useTheme } from "../../src/context/ThemeContext";
+import { Redirect, Tabs } from "expo-router";
+import { TabBar } from "../../src/components/TabBar";
+import { useSettings } from "../../src/context/SettingsContext";
 import { t } from "../../src/strings";
-import { fonts } from "../../src/theme";
 
 export default function TabsLayout() {
-  const { colors } = useTheme();
+  const { settings } = useSettings();
+
+  // First launch: show the short intro before the app itself.
+  if (!settings.introDone) return <Redirect href="../intro" />;
+
   return (
     <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.ink,
-        tabBarInactiveTintColor: colors.muted,
-        tabBarStyle: {
-          backgroundColor: colors.bg,
-          borderTopColor: colors.line,
-        },
-        tabBarLabelStyle: { fontSize: 14, fontFamily: fonts.semibold },
-        tabBarIconStyle: { display: "none" },
-      }}
+      tabBar={(props) => <TabBar {...props} />}
+      screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen name="index" options={{ title: t.tabs.timer }} />
       <Tabs.Screen name="subjects" options={{ title: t.tabs.subjects }} />

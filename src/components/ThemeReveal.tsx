@@ -8,7 +8,12 @@ import {
   type ComponentRef,
   type ReactNode,
 } from "react";
-import { AccessibilityInfo, StyleSheet, View } from "react-native";
+import {
+  AccessibilityInfo,
+  StyleSheet,
+  useColorScheme,
+  View,
+} from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -19,6 +24,7 @@ import Animated, {
 import { captureRef } from "react-native-view-shot";
 import { useSettings } from "../context/SettingsContext";
 import { useTheme } from "../context/ThemeContext";
+import type { ThemeChoice } from "../types";
 
 const REVEAL_MS = 650;
 const FADE_MS = 350;
@@ -38,10 +44,11 @@ type Overlay = {
 };
 
 type RevealApi = {
-  toggleTheme: (pageX: number, pageY: number) => Promise<void>;
+  setTheme: (next: ThemeChoice, pageX: number, pageY: number) => Promise<void>;
 };
-const RevealContext = createContext<RevealApi>({ toggleTheme: async () => {} });
+const RevealContext = createContext<RevealApi>({ setTheme: async () => {} });
 
+// setTheme('night', x, y) switches the theme with the reveal growing from the touch point.
 // How the switch works: take a picture of the current screen and lay it over everything,
 // switch the theme underneath, take a picture of the new look, then grow a circle of that
 // picture from the touch point until it covers the old one. If anything fails, the theme
@@ -49,6 +56,7 @@ const RevealContext = createContext<RevealApi>({ toggleTheme: async () => {} });
 export function ThemeRevealProvider({ children }: { children: ReactNode }) {
   const { update } = useSettings();
   const { isDark } = useTheme();
+  const systemDark = useColorScheme() === "dark";
 
   const rootRef = useRef<ComponentRef<typeof View>>(null);
   const size = useRef({ width: 0, height: 0 });
@@ -60,11 +68,17 @@ export function ThemeRevealProvider({ children }: { children: ReactNode }) {
   const radius = useSharedValue(0);
   const fade = useSharedValue(1);
 
-  const toggleTheme = useCallback(
-    async (pageX: number, pageY: number) => {
+  const setTheme = useCallback(
+    async (next: ThemeChoice, pageX: number, pageY: number) => {
+      // If the choice doesn't change how the app looks (for example System on a light phone
+      // while the app is already light), just save it without the animation.
+      const targetDark = next === "system" ? systemDark : next === "night";
+      if (targetDark === isDark) {
+        update({ theme: next });
+        return;
+      }
       if (busy.current) return;
       busy.current = true;
-      const next = isDark ? "light" : "night";
       try {
         const reduceMotion = await AccessibilityInfo.isReduceMotionEnabled();
         const { width, height } = size.current;
@@ -140,10 +154,10 @@ export function ThemeRevealProvider({ children }: { children: ReactNode }) {
         busy.current = false;
       }
     },
-    [isDark, update, radius, fade],
+    [isDark, systemDark, update, radius, fade],
   );
 
-  const api = useMemo(() => ({ toggleTheme }), [toggleTheme]);
+  const api = useMemo(() => ({ setTheme }), [setTheme]);
 
   return (
     <RevealContext.Provider value={api}>
@@ -237,4 +251,4 @@ const styles = StyleSheet.create({
   clip: { overflow: "hidden" },
 });
 
-export const useThemeToggle = (): RevealApi => useContext(RevealContext);
+export const useThemeReveal = (): RevealApi => useContext(RevealContext);
