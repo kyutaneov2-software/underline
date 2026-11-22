@@ -55,7 +55,13 @@ export default function RootLayout() {
             <SubjectsProvider>
               <TimerProvider>
                 <Themed>
-                  <Stack screenOptions={{ headerShown: false }} />
+                  <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="(tabs)" />
+                    <Stack.Screen
+                      name="subject"
+                      options={{ presentation: "modal" }}
+                    />
+                  </Stack>
                 </Themed>
               </TimerProvider>
             </SubjectsProvider>

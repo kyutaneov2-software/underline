@@ -28,14 +28,16 @@ export async function getSubjects(): Promise<Subject[]> {
 export async function insertSubject(
   name: string,
   color: string,
+  weeklyGoalMin: number | null,
+  examDate: string | null,
 ): Promise<number> {
   const db = await getDb();
   const row = await db.getFirstAsync<{ next: number }>(
     "SELECT COALESCE(MAX(position), -1) + 1 AS next FROM subjects",
   );
   const res = await db.runAsync(
-    "INSERT INTO subjects (name, color, position) VALUES (?, ?, ?)",
-    [name, color, row?.next ?? 0],
+    "INSERT INTO subjects (name, color, weekly_goal_min, exam_date, position) VALUES (?, ?, ?, ?, ?)",
+    [name, color, weeklyGoalMin, examDate, row?.next ?? 0],
   );
   return res.lastInsertRowId;
 }

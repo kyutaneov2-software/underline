@@ -7,6 +7,7 @@ export type Palette = {
   line: string;
   accent: string;
   onAccent: string;
+  danger: string;
 };
 
 export const lightPalette: Palette = {
@@ -17,6 +18,7 @@ export const lightPalette: Palette = {
   line: "#E4E7EC",
   accent: "#3347FF",
   onAccent: "#FFFFFF",
+  danger: "#B5483A",
 };
 
 export const nightPalette: Palette = {
@@ -27,6 +29,7 @@ export const nightPalette: Palette = {
   line: "#232937",
   accent: "#7C8BFF",
   onAccent: "#0B0D12",
+  danger: "#F0907F",
 };
 
 export const radius = { sm: 10, md: 16, lg: 22, pill: 999 };

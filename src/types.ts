@@ -10,6 +10,14 @@ export type Subject = {
   examDate: string | null; // 'YYYY-MM-DD'
 };
 
+export type SubjectDraft = {
+  id?: number; // missing when creating a new subject
+  name: string;
+  color: string;
+  weeklyGoalMin: number | null;
+  examDate: string | null;
+};
+
 export type Session = {
   id: number;
   startedAt: number; // unix ms

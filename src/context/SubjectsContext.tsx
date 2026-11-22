@@ -8,20 +8,25 @@ import {
   type ReactNode,
 } from "react";
 import { MAX_SUBJECT_NAME } from "../config";
-import { archiveSubject, getSubjects, insertSubject } from "../db/subjects";
+import {
+  archiveSubject,
+  getSubjects,
+  insertSubject,
+  updateSubject,
+} from "../db/subjects";
 import { t } from "../strings";
-import type { Subject } from "../types";
+import type { Subject, SubjectDraft } from "../types";
 
 type SubjectsContextValue = {
   subjects: Subject[];
-  addSubject: (name: string, color: string) => Promise<string | null>; // error message or null
+  saveSubject: (draft: SubjectDraft) => Promise<string | null>; // error message or null
   removeSubject: (id: number) => Promise<void>;
   byId: (id: number | null) => Subject | undefined;
 };
 
 const SubjectsContext = createContext<SubjectsContextValue>({
   subjects: [],
-  addSubject: async () => null,
+  saveSubject: async () => null,
   removeSubject: async () => {},
   byId: () => undefined,
 });
@@ -37,16 +42,34 @@ export function SubjectsProvider({ children }: { children: ReactNode }) {
     reload();
   }, [reload]);
 
-  const addSubject = useCallback(
-    async (rawName: string, color: string): Promise<string | null> => {
-      const name = rawName.trim();
+  // Creates a subject, or updates it when the draft has an id.
+  const saveSubject = useCallback(
+    async (draft: SubjectDraft): Promise<string | null> => {
+      const name = draft.name.trim();
       if (!name) return t.errors.nameEmpty;
       if (name.length > MAX_SUBJECT_NAME)
         return t.errors.nameTooLong(MAX_SUBJECT_NAME);
-      if (subjects.some((s) => s.name.toLowerCase() === name.toLowerCase()))
-        return t.errors.nameTaken;
+      const taken = subjects.some(
+        (s) => s.id !== draft.id && s.name.toLowerCase() === name.toLowerCase(),
+      );
+      if (taken) return t.errors.nameTaken;
       try {
-        await insertSubject(name, color);
+        if (draft.id === undefined) {
+          await insertSubject(
+            name,
+            draft.color,
+            draft.weeklyGoalMin,
+            draft.examDate,
+          );
+        } else {
+          await updateSubject({
+            id: draft.id,
+            name,
+            color: draft.color,
+            weeklyGoalMin: draft.weeklyGoalMin,
+            examDate: draft.examDate,
+          });
+        }
         await reload();
         return null;
       } catch {
@@ -71,8 +94,8 @@ export function SubjectsProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ subjects, addSubject, removeSubject, byId }),
-    [subjects, addSubject, removeSubject, byId],
+    () => ({ subjects, saveSubject, removeSubject, byId }),
+    [subjects, saveSubject, removeSubject, byId],
   );
   return (
     <SubjectsContext.Provider value={value}>

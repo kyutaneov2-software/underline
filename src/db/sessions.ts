@@ -89,3 +89,22 @@ export async function getDailyTotals(
   });
   return map;
 }
+
+// Completed focus seconds per subject since a given time (unix ms), keyed by subject id.
+export async function getFocusSecondsBySubject(
+  sinceMs: number,
+): Promise<Record<number, number>> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<{ subject_id: number; total: number }>(
+    `SELECT subject_id, SUM(duration_sec) AS total
+       FROM sessions
+      WHERE completed = 1 AND subject_id IS NOT NULL AND started_at >= ?
+      GROUP BY subject_id`,
+    [sinceMs],
+  );
+  const map: Record<number, number> = {};
+  rows.forEach((r) => {
+    map[r.subject_id] = r.total;
+  });
+  return map;
+}

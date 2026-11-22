@@ -29,3 +29,6 @@ export const SUBJECT_COLORS: string[] = [
   "#64748B",
 ];
 export const MAX_SUBJECT_NAME = 24;
+
+// First day of the week: 0 = Sunday, 1 = Monday. A setting for this arrives in step 5.
+export const WEEK_STARTS_ON = 1;

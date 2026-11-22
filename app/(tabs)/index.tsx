@@ -11,6 +11,7 @@ import { useSubjects } from "../../src/context/SubjectsContext";
 import { useTheme } from "../../src/context/ThemeContext";
 import { useTimerContext } from "../../src/context/TimerContext";
 import { getFocusSecondsSince, onSessionsChanged } from "../../src/db/sessions";
+import { tone } from "../../src/lib/colors";
 import { t } from "../../src/strings";
 import { fonts, radius, space, type Palette } from "../../src/theme";
 
@@ -185,7 +186,7 @@ export default function TimerScreen() {
                   key={s.id}
                   styles={styles}
                   label={s.name}
-                  dot={s.color}
+                  dot={tone(s.color, isDark)}
                   selected={timer.subjectId === s.id}
                   disabled={!idle}
                   onPress={() => timer.setSubject(s.id)}
