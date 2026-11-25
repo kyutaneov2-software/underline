@@ -2,7 +2,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
   Alert,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,7 +17,9 @@ import { tone } from "../src/lib/colors";
 import { formatDateLong } from "../src/lib/dates";
 import { formatDuration } from "../src/lib/format";
 import { t } from "../src/strings";
-import { fonts, radius, space, type Palette } from "../src/theme";
+import { centered, fonts, radius, space, type Palette } from "../src/theme";
+import { Icon } from "../src/components/Icon";
+import { PressableScale } from "../src/components/PressableScale";
 
 const GOAL_STEP = 30;
 const GOAL_MIN = 30;
@@ -91,18 +92,21 @@ export default function SubjectScreen() {
   const canRemove = !!existing && subjects.length > 1;
 
   return (
-    <SafeAreaView style={styles.root} edges={["top", "bottom"]}>
+    <SafeAreaView
+      style={styles.root}
+      edges={["top", "bottom", "left", "right"]}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>
           {existing ? t.subjects.editTitle : t.subjects.newTitle}
         </Text>
-        <Pressable
+        <PressableScale
           onPress={() => router.back()}
           hitSlop={8}
           accessibilityRole="button"
         >
           <Text style={styles.cancel}>{t.subjects.cancel}</Text>
-        </Pressable>
+        </PressableScale>
       </View>
 
       <ScrollView
@@ -129,7 +133,7 @@ export default function SubjectScreen() {
         <Text style={styles.label}>{t.subjects.color}</Text>
         <View style={styles.swatches}>
           {SUBJECT_COLORS.map((c) => (
-            <Pressable
+            <PressableScale
               key={c}
               onPress={() => setColor(c)}
               accessibilityRole="button"
@@ -140,14 +144,14 @@ export default function SubjectScreen() {
               <View
                 style={[styles.swatch, { backgroundColor: tone(c, isDark) }]}
               />
-            </Pressable>
+            </PressableScale>
           ))}
         </View>
 
         <View style={styles.row}>
           <Text style={styles.rowLabel}>{t.subjects.weeklyGoal}</Text>
           <View style={styles.stepper}>
-            <Pressable
+            <PressableScale
               onPress={decGoal}
               disabled={goal === null}
               hitSlop={8}
@@ -155,11 +159,11 @@ export default function SubjectScreen() {
               accessibilityLabel="Decrease goal"
             >
               <Text style={styles.stepBtnText}>−</Text>
-            </Pressable>
+            </PressableScale>
             <Text style={styles.stepValue}>
               {goal === null ? t.subjects.none : formatDuration(goal)}
             </Text>
-            <Pressable
+            <PressableScale
               onPress={incGoal}
               disabled={goal !== null && goal >= GOAL_MAX}
               hitSlop={8}
@@ -167,13 +171,13 @@ export default function SubjectScreen() {
               accessibilityLabel="Increase goal"
             >
               <Text style={styles.stepBtnText}>+</Text>
-            </Pressable>
+            </PressableScale>
           </View>
         </View>
 
         <View style={styles.row}>
           <Text style={styles.rowLabel}>{t.subjects.examDate}</Text>
-          <Pressable
+          <PressableScale
             onPress={() => setShowPicker((v) => !v)}
             hitSlop={8}
             accessibilityRole="button"
@@ -185,32 +189,33 @@ export default function SubjectScreen() {
                 {exam ? t.subjects.change : t.subjects.set}
               </Text>
             </Text>
-          </Pressable>
+          </PressableScale>
         </View>
         {showPicker ? <DatePicker value={exam} onChange={setExam} /> : null}
 
         {canRemove ? (
-          <Pressable
+          <PressableScale
             onPress={onRemove}
             style={styles.remove}
             accessibilityRole="button"
           >
+            <Icon name="trash-2" size={16} color={colors.danger} />
             <Text style={styles.removeText}>{t.subjects.remove}</Text>
-          </Pressable>
+          </PressableScale>
         ) : existing ? (
           <Text style={styles.note}>{t.subjects.keepOne}</Text>
         ) : null}
       </ScrollView>
 
       <View style={styles.footer}>
-        <Pressable
+        <PressableScale
           onPress={onSave}
           disabled={!name.trim() || saving}
           style={[styles.save, (!name.trim() || saving) && styles.saveOff]}
           accessibilityRole="button"
         >
           <Text style={styles.saveText}>{t.subjects.save}</Text>
-        </Pressable>
+        </PressableScale>
       </View>
     </SafeAreaView>
   );
@@ -233,7 +238,7 @@ const makeStyles = (c: Palette) =>
       letterSpacing: -0.5,
     },
     cancel: { color: c.muted, fontFamily: fonts.medium, fontSize: 15 },
-    content: { padding: space.lg, paddingBottom: space.xl },
+    content: { ...centered, padding: space.lg, paddingBottom: space.xl },
     label: {
       color: c.muted,
       fontFamily: fonts.regular,
@@ -314,6 +319,8 @@ const makeStyles = (c: Palette) =>
     },
     remove: {
       height: 48,
+      flexDirection: "row",
+      gap: 8,
       alignItems: "center",
       justifyContent: "center",
       marginTop: space.lg,
@@ -327,6 +334,7 @@ const makeStyles = (c: Palette) =>
       marginTop: space.lg,
     },
     footer: {
+      ...centered,
       paddingHorizontal: space.lg,
       paddingBottom: space.md,
       paddingTop: space.sm,

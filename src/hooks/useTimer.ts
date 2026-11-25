@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppState } from "react-native";
 import * as Haptics from "expo-haptics";
 import { MIN_LOG_SECONDS } from "../config";
@@ -6,7 +6,11 @@ import { useSettings } from "../context/SettingsContext";
 import { useSubjects } from "../context/SubjectsContext";
 import { getJSON, setJSON } from "../db/kv";
 import { insertSession } from "../db/sessions";
-import { cancelTimerEnd, scheduleTimerEnd } from "../lib/notifications";
+import {
+  cancelTimerEnd,
+  scheduleTimerEnd,
+  type AlertInfo,
+} from "../lib/notifications";
 import type { Mode, Settings, TimerState } from "../types";
 
 const STATE_KEY = "timer_state_v1";
@@ -76,6 +80,33 @@ async function complete(s: TimerState, st: Settings): Promise<TimerState> {
   };
 }
 
+// What the end-of-phase alert should say.
+function alertInfo(
+  s: TimerState,
+  st: Settings,
+  subject: string | null,
+): AlertInfo {
+  const minutes = Math.round(s.durationMs / MIN);
+  if (s.mode === "focus") {
+    const done = s.focusDone + 1;
+    const long = st.longBreakEvery > 0 && done % st.longBreakEvery === 0;
+    return {
+      mode: "focus",
+      subject,
+      minutes,
+      nextBreakMin: long ? st.longBreakMin : st.breakMin,
+      nextIsLong: long,
+    };
+  }
+  return {
+    mode: "break",
+    subject,
+    minutes,
+    nextBreakMin: null,
+    nextIsLong: false,
+  };
+}
+
 export type LastCompleted = { subjectId: number | null; minutes: number };
 
 export type TimerApi = {
@@ -83,7 +114,6 @@ export type TimerApi = {
   mode: Mode;
   status: TimerState["status"];
   subjectId: number | null;
-  remainingMs: number;
   totalMs: number;
   focusDone: number;
   longBreak: boolean;
@@ -95,7 +125,9 @@ export type TimerApi = {
   setSubject: (id: number) => void;
 };
 
-export function useTimer(): TimerApi {
+// The api changes only when something other than the clock changes. The clock (remainingMs)
+// updates four times a second, so it is returned on its own and only the clock views read it.
+export function useTimer(): { api: TimerApi; remainingMs: number } {
   const { settings } = useSettings();
   const { subjects } = useSubjects();
 
@@ -107,6 +139,8 @@ export function useTimer(): TimerApi {
   );
 
   const stateRef = useRef<TimerState>(state);
+  const subjectsRef = useRef(subjects);
+  subjectsRef.current = subjects;
   const settingsRef = useRef<Settings>(settings);
   settingsRef.current = settings;
   const finishingRef = useRef(false);
@@ -133,7 +167,13 @@ export function useTimer(): TimerApi {
     if (s.status === "running") return;
     const t = Date.now();
     const endAt = t + s.remainingMs;
-    const notifId = await scheduleTimerEnd(endAt, s.mode);
+    const subjectName =
+      subjectsRef.current.find((x) => x.id === s.subjectId)?.name ?? null;
+    const notifId = await scheduleTimerEnd(
+      endAt,
+      alertInfo(s, settingsRef.current, subjectName),
+      settingsRef.current.sound,
+    );
     commit({
       ...s,
       status: "running",
@@ -315,20 +355,38 @@ export function useTimer(): TimerApi {
     [commit],
   );
 
-  return {
-    ready,
-    mode: state.mode,
-    status: state.status,
-    subjectId: state.subjectId,
-    remainingMs,
-    totalMs: state.durationMs,
-    focusDone: state.focusDone,
-    longBreak: state.longBreak,
-    lastCompleted,
-    start,
-    pause,
-    reset,
-    setMode,
-    setSubject,
-  };
+  const api = useMemo<TimerApi>(
+    () => ({
+      ready,
+      mode: state.mode,
+      status: state.status,
+      subjectId: state.subjectId,
+      totalMs: state.durationMs,
+      focusDone: state.focusDone,
+      longBreak: state.longBreak,
+      lastCompleted,
+      start,
+      pause,
+      reset,
+      setMode,
+      setSubject,
+    }),
+    [
+      ready,
+      state.mode,
+      state.status,
+      state.subjectId,
+      state.durationMs,
+      state.focusDone,
+      state.longBreak,
+      lastCompleted,
+      start,
+      pause,
+      reset,
+      setMode,
+      setSubject,
+    ],
+  );
+
+  return { api, remainingMs };
 }

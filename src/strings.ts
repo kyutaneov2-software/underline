@@ -69,6 +69,7 @@ export const t = {
     noSessions: "No sessions this week yet.",
     share: "Share weekly recap",
     noSubject: "No subject",
+    goalLine: (goal: string) => `Line shows your daily goal, ${goal}`,
   },
   log: {
     title: "Log",
@@ -95,6 +96,13 @@ export const t = {
     timer: "Timer",
     goals: "Goals",
     behavior: "Behavior",
+    alerts: "Alerts",
+    sound: "Alert sound",
+    soundHint: "Plays when a session or break ends",
+    soft: "Soft",
+    bell: "Bell",
+    pulse: "Pulse",
+    off: "Off",
     look: "Look",
     about: "About",
     focusLength: "Focus length",
@@ -134,6 +142,27 @@ export const t = {
     step3Title: "Any exams coming up?",
     step3Note: "Optional. Add a date to see a countdown.",
     noDate: "No date",
+  },
+  notify: {
+    focusTitle: "Session complete",
+    focusBody: (
+      subject: string | null,
+      minutes: number,
+      breakMin: number | null,
+      long: boolean,
+    ) => {
+      const done = subject
+        ? `${subject}, ${minutes} min.`
+        : `${minutes} min done.`;
+      return breakMin
+        ? `${done} Take a ${breakMin} min ${long ? "long " : ""}break.`
+        : done;
+    },
+    breakTitle: "Break is over",
+    breakBody: (subject: string | null) =>
+      subject
+        ? `Ready for another round of ${subject}?`
+        : "Ready for the next session?",
   },
   weekdaysShort: ["M", "T", "W", "T", "F", "S", "S"],
   theme: { toNight: "Night", toLight: "Light" },

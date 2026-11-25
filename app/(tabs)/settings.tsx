@@ -1,19 +1,54 @@
-import { useMemo, type ReactNode } from 'react';
-import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Segmented } from '../../src/components/Segmented';
-import { Stepper } from '../../src/components/Stepper';
-import { useThemeReveal } from '../../src/components/ThemeReveal';
-import { APP_NAME } from '../../src/config';
-import { useSettings } from '../../src/context/SettingsContext';
-import { useTheme } from '../../src/context/ThemeContext';
-import { formatDuration } from '../../src/lib/format';
-import { t } from '../../src/strings';
-import { fonts, space, type Palette } from '../../src/theme';
-import type { ThemeChoice } from '../../src/types';
+import { Children, useMemo, type ReactNode } from "react";
+import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Icon, type IconName } from "../../src/components/Icon";
+import { LogoMark } from "../../src/components/LogoMark";
+import { Segmented } from "../../src/components/Segmented";
+import { Stepper } from "../../src/components/Stepper";
+import { useThemeReveal } from "../../src/components/ThemeReveal";
+import { APP_NAME } from "../../src/config";
+import { useSettings } from "../../src/context/SettingsContext";
+import { useTheme } from "../../src/context/ThemeContext";
+import { previewSound } from "../../src/lib/sounds";
+import { formatDuration } from "../../src/lib/format";
+import { t } from "../../src/strings";
+import { centered, fonts, space, type Palette } from "../../src/theme";
+import type { SoundChoice, ThemeChoice } from "../../src/types";
+
+type Styles = ReturnType<typeof makeStyles>;
+
+// A titled card. Rows inside it are separated by thin dividers.
+function Group({
+  styles,
+  title,
+  icon,
+  children,
+}: {
+  styles: Styles;
+  title: string;
+  icon: IconName;
+  children: ReactNode;
+}) {
+  const rows = Children.toArray(children);
+  return (
+    <View style={styles.group}>
+      <View style={styles.sectionRow}>
+        <Icon name={icon} size={16} />
+        <Text style={styles.section}>{title}</Text>
+      </View>
+      <View style={styles.card}>
+        {rows.map((row, i) => (
+          <View key={i} style={i > 0 ? styles.divider : undefined}>
+            {row}
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
 
 type RowProps = {
-  styles: ReturnType<typeof makeStyles>;
+  styles: Styles;
   label: string;
   hint?: string;
   children: ReactNode;
@@ -32,6 +67,26 @@ function Row({ styles, label, hint, children }: RowProps) {
   );
 }
 
+function Block({
+  styles,
+  label,
+  hint,
+  children,
+}: {
+  styles: Styles;
+  label: string;
+  hint?: string;
+  children: ReactNode;
+}) {
+  return (
+    <View style={styles.block}>
+      <Text style={styles.rowLabel}>{label}</Text>
+      {hint ? <Text style={styles.rowHint}>{hint}</Text> : null}
+      <View style={styles.segWrap}>{children}</View>
+    </View>
+  );
+}
+
 export default function SettingsScreen() {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -40,36 +95,76 @@ export default function SettingsScreen() {
 
   const switchProps = {
     trackColor: { false: colors.line, true: colors.accent },
-    thumbColor: '#FFFFFF',
+    thumbColor: "#FFFFFF",
     ios_backgroundColor: colors.line,
   };
 
   return (
-    <SafeAreaView style={styles.root} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={styles.root} edges={["top", "left", "right"]}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.title}>{t.settings.title}</Text>
 
-        <Text style={styles.section}>{t.settings.timer}</Text>
-        <Row styles={styles} label={t.settings.focusLength}>
-          <Stepper label={t.settings.focusLength} value={settings.focusMin} min={5} max={120} step={5} format={t.timer.minutes} onChange={(v) => update({ focusMin: v })} />
-        </Row>
-        <Row styles={styles} label={t.settings.shortBreak}>
-          <Stepper label={t.settings.shortBreak} value={settings.breakMin} min={1} max={30} format={t.timer.minutes} onChange={(v) => update({ breakMin: v })} />
-        </Row>
-        <Row styles={styles} label={t.settings.longBreak}>
-          <Stepper label={t.settings.longBreak} value={settings.longBreakMin} min={5} max={60} step={5} format={t.timer.minutes} onChange={(v) => update({ longBreakMin: v })} />
-        </Row>
-        <Row styles={styles} label={t.settings.longBreakAfter}>
-          <Stepper label={t.settings.longBreakAfter} value={settings.longBreakEvery} min={2} max={8} format={t.settings.sessions} onChange={(v) => update({ longBreakEvery: v })} />
-        </Row>
+        <Group styles={styles} title={t.settings.timer} icon="clock">
+          <Row styles={styles} label={t.settings.focusLength}>
+            <Stepper
+              label={t.settings.focusLength}
+              value={settings.focusMin}
+              min={5}
+              max={120}
+              step={5}
+              format={t.timer.minutes}
+              onChange={(v) => update({ focusMin: v })}
+            />
+          </Row>
+          <Row styles={styles} label={t.settings.shortBreak}>
+            <Stepper
+              label={t.settings.shortBreak}
+              value={settings.breakMin}
+              min={1}
+              max={30}
+              format={t.timer.minutes}
+              onChange={(v) => update({ breakMin: v })}
+            />
+          </Row>
+          <Row styles={styles} label={t.settings.longBreak}>
+            <Stepper
+              label={t.settings.longBreak}
+              value={settings.longBreakMin}
+              min={5}
+              max={60}
+              step={5}
+              format={t.timer.minutes}
+              onChange={(v) => update({ longBreakMin: v })}
+            />
+          </Row>
+          <Row styles={styles} label={t.settings.longBreakAfter}>
+            <Stepper
+              label={t.settings.longBreakAfter}
+              value={settings.longBreakEvery}
+              min={2}
+              max={8}
+              format={t.settings.sessions}
+              onChange={(v) => update({ longBreakEvery: v })}
+            />
+          </Row>
+        </Group>
 
-        <Text style={styles.section}>{t.settings.goals}</Text>
-        <Row styles={styles} label={t.settings.dailyGoal}>
-          <Stepper label={t.settings.dailyGoal} value={settings.dailyGoalMin} min={15} max={600} step={15} format={formatDuration} onChange={(v) => update({ dailyGoalMin: v })} />
-        </Row>
-        <View style={styles.block}>
-          <Text style={styles.rowLabel}>{t.settings.weekStarts}</Text>
-          <View style={styles.segWrap}>
+        <Group styles={styles} title={t.settings.goals} icon="target">
+          <Row styles={styles} label={t.settings.dailyGoal}>
+            <Stepper
+              label={t.settings.dailyGoal}
+              value={settings.dailyGoalMin}
+              min={15}
+              max={600}
+              step={15}
+              format={formatDuration}
+              onChange={(v) => update({ dailyGoalMin: v })}
+            />
+          </Row>
+          <Block styles={styles} label={t.settings.weekStarts}>
             <Segmented<0 | 1>
               options={[
                 { value: 1, label: t.settings.monday },
@@ -78,39 +173,82 @@ export default function SettingsScreen() {
               value={settings.weekStartsOn}
               onSelect={(v) => update({ weekStartsOn: v })}
             />
-          </View>
-        </View>
+          </Block>
+        </Group>
 
-        <Text style={styles.section}>{t.settings.behavior}</Text>
-        <Row styles={styles} label={t.settings.autoStart} hint={t.settings.autoStartHint}>
-          <Switch {...switchProps} value={settings.autoStart} onValueChange={(v) => update({ autoStart: v })} />
-        </Row>
-        <Row styles={styles} label={t.settings.keepAwake} hint={t.settings.keepAwakeHint}>
-          <Switch {...switchProps} value={settings.keepAwake} onValueChange={(v) => update({ keepAwake: v })} />
-        </Row>
-        <Row styles={styles} label={t.settings.haptics}>
-          <Switch {...switchProps} value={settings.haptics} onValueChange={(v) => update({ haptics: v })} />
-        </Row>
+        <Group styles={styles} title={t.settings.behavior} icon="sliders">
+          <Row
+            styles={styles}
+            label={t.settings.autoStart}
+            hint={t.settings.autoStartHint}
+          >
+            <Switch
+              {...switchProps}
+              value={settings.autoStart}
+              onValueChange={(v) => update({ autoStart: v })}
+            />
+          </Row>
+          <Row
+            styles={styles}
+            label={t.settings.keepAwake}
+            hint={t.settings.keepAwakeHint}
+          >
+            <Switch
+              {...switchProps}
+              value={settings.keepAwake}
+              onValueChange={(v) => update({ keepAwake: v })}
+            />
+          </Row>
+        </Group>
 
-        <Text style={styles.section}>{t.settings.look}</Text>
-        <View style={styles.block}>
-          <Text style={styles.rowLabel}>{t.settings.theme}</Text>
-          <View style={styles.segWrap}>
+        <Group styles={styles} title={t.settings.alerts} icon="bell">
+          <Block
+            styles={styles}
+            label={t.settings.sound}
+            hint={t.settings.soundHint}
+          >
+            <Segmented<SoundChoice>
+              options={[
+                { value: "soft", label: t.settings.soft },
+                { value: "bell", label: t.settings.bell },
+                { value: "pulse", label: t.settings.pulse },
+                { value: "off", label: t.settings.off },
+              ]}
+              value={settings.sound}
+              onSelect={(v) => {
+                update({ sound: v });
+                previewSound(v);
+              }}
+            />
+          </Block>
+          <Row styles={styles} label={t.settings.haptics}>
+            <Switch
+              {...switchProps}
+              value={settings.haptics}
+              onValueChange={(v) => update({ haptics: v })}
+            />
+          </Row>
+        </Group>
+
+        <Group styles={styles} title={t.settings.look} icon="moon">
+          <Block styles={styles} label={t.settings.theme}>
             <Segmented<ThemeChoice>
               options={[
-                { value: 'system', label: t.settings.system },
-                { value: 'light', label: t.settings.light },
-                { value: 'night', label: t.settings.night },
+                { value: "system", label: t.settings.system },
+                { value: "light", label: t.settings.light },
+                { value: "night", label: t.settings.night },
               ]}
               value={settings.theme}
               onSelect={(v, x, y) => setTheme(v, x, y)}
             />
-          </View>
-        </View>
+          </Block>
+        </Group>
 
-        <Text style={styles.section}>{t.settings.about}</Text>
-        <Text style={styles.about}>{APP_NAME}</Text>
-        <Text style={styles.privacy}>{t.settings.privacy}</Text>
+        <View style={styles.about}>
+          <LogoMark size={34} />
+          <Text style={styles.aboutName}>{APP_NAME}</Text>
+          <Text style={styles.privacy}>{t.settings.privacy}</Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -119,22 +257,62 @@ export default function SettingsScreen() {
 const makeStyles = (c: Palette) =>
   StyleSheet.create({
     root: { flex: 1, backgroundColor: c.bg },
-    content: { padding: space.lg, paddingBottom: space.xl },
-    title: { color: c.ink, fontFamily: fonts.bold, fontSize: 28, letterSpacing: -0.5 },
-    section: { color: c.muted, fontFamily: fonts.regular, fontSize: 14, marginTop: space.lg + space.sm, marginBottom: space.xs },
+    content: { ...centered, padding: space.lg, paddingBottom: space.xl },
+    title: {
+      color: c.ink,
+      fontFamily: fonts.bold,
+      fontSize: 30,
+      letterSpacing: -0.6,
+    },
+    group: { marginTop: space.lg },
+    sectionRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: space.sm,
+      marginLeft: 4,
+    },
+    section: { color: c.ink, fontFamily: fonts.semibold, fontSize: 15 },
+    card: {
+      backgroundColor: c.surface,
+      borderRadius: 22,
+      borderWidth: 1,
+      borderColor: c.line,
+      paddingHorizontal: space.md,
+    },
+    divider: {
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: c.line,
+    },
     row: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      minHeight: 56,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: c.line,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      minHeight: 60,
     },
     rowText: { flex: 1, paddingRight: space.md },
     rowLabel: { color: c.ink, fontFamily: fonts.medium, fontSize: 16 },
-    rowHint: { color: c.muted, fontFamily: fonts.regular, fontSize: 13, marginTop: 2 },
-    block: { paddingVertical: space.md, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: c.line },
+    rowHint: {
+      color: c.muted,
+      fontFamily: fonts.regular,
+      fontSize: 13,
+      marginTop: 2,
+    },
+    block: { paddingVertical: space.md },
     segWrap: { marginTop: space.sm },
-    about: { color: c.ink, fontFamily: fonts.semibold, fontSize: 16, marginTop: space.sm },
-    privacy: { color: c.muted, fontFamily: fonts.regular, fontSize: 14, lineHeight: 21, marginTop: 4 },
+    about: { alignItems: "center", marginTop: space.xl, gap: 6 },
+    aboutName: {
+      color: c.ink,
+      fontFamily: fonts.bold,
+      fontSize: 16,
+      marginTop: 6,
+    },
+    privacy: {
+      color: c.muted,
+      fontFamily: fonts.regular,
+      fontSize: 14,
+      lineHeight: 21,
+      textAlign: "center",
+      maxWidth: 280,
+    },
   });

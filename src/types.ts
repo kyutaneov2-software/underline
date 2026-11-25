@@ -1,6 +1,7 @@
 export type Mode = "focus" | "break";
 export type TimerStatus = "idle" | "running" | "paused";
 export type ThemeChoice = "system" | "light" | "night";
+export type SoundChoice = "soft" | "bell" | "pulse" | "off";
 
 export type Subject = {
   id: number;
@@ -34,6 +35,7 @@ export type Settings = {
   autoStart: boolean; // start the next phase automatically (only while the app is open)
   keepAwake: boolean; // keep the screen on while a timer runs
   haptics: boolean;
+  sound: SoundChoice; // the alert sound when a session or break ends
   dailyGoalMin: number;
   weekStartsOn: 0 | 1; // 0 = Sunday, 1 = Monday
   theme: ThemeChoice;

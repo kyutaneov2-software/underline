@@ -13,12 +13,23 @@ import Animated, {
 import { useTheme } from "../context/ThemeContext";
 import type { TimerStatus } from "../types";
 
-type Props = { status: TimerStatus; remainingMs: number; totalMs: number };
+type Props = {
+  status: TimerStatus;
+  remainingMs: number;
+  totalMs: number;
+  height?: number;
+};
 
-// The signature element: a thin line under the subject that grows for the whole session.
-// While running, one linear animation covers the remaining time on the UI thread, so it
-// moves smoothly instead of in steps. Pausing freezes it; finishing pulses it once.
-export function UnderlineBar({ status, remainingMs, totalMs }: Props) {
+// The signature element, the same bold rounded underline as the app icon. It sits under the
+// subject's name and is as wide as the name. While running, one linear animation covers the
+// remaining time on the UI thread, so it moves smoothly instead of in steps. Pausing freezes
+// it; finishing pulses it once.
+export function UnderlineBar({
+  status,
+  remainingMs,
+  totalMs,
+  height = 8,
+}: Props) {
   const { colors } = useTheme();
   const fill = useSharedValue(0);
   const pulse = useSharedValue(1);
@@ -80,8 +91,8 @@ export function UnderlineBar({ status, remainingMs, totalMs }: Props) {
     opacity: pulse.value,
   }));
   const styles = useMemo(
-    () => makeStyles(colors.line, colors.accent),
-    [colors.line, colors.accent],
+    () => makeStyles(colors.accentSoft, colors.accent, height),
+    [colors.accentSoft, colors.accent, height],
   );
 
   return (
@@ -91,13 +102,13 @@ export function UnderlineBar({ status, remainingMs, totalMs }: Props) {
   );
 }
 
-const makeStyles = (line: string, accent: string) =>
+const makeStyles = (track: string, accent: string, height: number) =>
   StyleSheet.create({
     track: {
-      height: 3,
-      borderRadius: 2,
-      backgroundColor: line,
+      height,
+      borderRadius: height / 2,
+      backgroundColor: track,
       overflow: "hidden",
     },
-    fill: { height: 3, borderRadius: 2, backgroundColor: accent },
+    fill: { height, borderRadius: height / 2, backgroundColor: accent },
   });

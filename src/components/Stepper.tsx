@@ -1,7 +1,9 @@
 import { useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { useTheme } from "../context/ThemeContext";
 import { fonts, space, type Palette } from "../theme";
+import { Icon } from "./Icon";
+import { PressableScale } from "./PressableScale";
 
 type Props = {
   value: number;
@@ -29,7 +31,7 @@ export function Stepper({
   const atMax = value >= max;
   return (
     <View style={styles.row}>
-      <Pressable
+      <PressableScale
         onPress={() => onChange(Math.max(min, value - step))}
         disabled={atMin}
         hitSlop={8}
@@ -37,10 +39,10 @@ export function Stepper({
         accessibilityRole="button"
         accessibilityLabel={`Decrease ${label}`}
       >
-        <Text style={styles.btnText}>−</Text>
-      </Pressable>
+        <Icon name="minus" size={18} />
+      </PressableScale>
       <Text style={styles.value}>{format ? format(value) : String(value)}</Text>
-      <Pressable
+      <PressableScale
         onPress={() => onChange(Math.min(max, value + step))}
         disabled={atMax}
         hitSlop={8}
@@ -48,8 +50,8 @@ export function Stepper({
         accessibilityRole="button"
         accessibilityLabel={`Increase ${label}`}
       >
-        <Text style={styles.btnText}>+</Text>
-      </Pressable>
+        <Icon name="plus" size={18} />
+      </PressableScale>
     </View>
   );
 }

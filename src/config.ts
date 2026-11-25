@@ -10,6 +10,7 @@ export const DEFAULT_SETTINGS: Settings = {
   autoStart: false,
   keepAwake: false,
   haptics: true,
+  sound: "soft",
   dailyGoalMin: 120,
   weekStartsOn: 1,
   theme: "system",

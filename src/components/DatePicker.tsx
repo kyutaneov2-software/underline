@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { useSettings } from "../context/SettingsContext";
 import { useTheme } from "../context/ThemeContext";
 import { parseDateKey, toDateKey } from "../lib/dates";
 import { t } from "../strings";
 import { fonts, space, type Palette } from "../theme";
+import { Icon } from "./Icon";
+import { PressableScale } from "./PressableScale";
 
 type Props = {
   value: string | null; // 'YYYY-MM-DD'
@@ -56,7 +58,7 @@ export function DatePicker({ value, onChange }: Props) {
   return (
     <View style={styles.root}>
       <View style={styles.header}>
-        <Pressable
+        <PressableScale
           onPress={() => shift(-1)}
           disabled={atOrBeforeCurrentMonth}
           hitSlop={8}
@@ -64,18 +66,18 @@ export function DatePicker({ value, onChange }: Props) {
           accessibilityRole="button"
           accessibilityLabel="Previous month"
         >
-          <Text style={styles.navText}>‹</Text>
-        </Pressable>
+          <Icon name="chevron-left" size={22} />
+        </PressableScale>
         <Text style={styles.month}>{monthLabel}</Text>
-        <Pressable
+        <PressableScale
           onPress={() => shift(1)}
           hitSlop={8}
           style={styles.nav}
           accessibilityRole="button"
           accessibilityLabel="Next month"
         >
-          <Text style={styles.navText}>›</Text>
-        </Pressable>
+          <Icon name="chevron-right" size={22} />
+        </PressableScale>
       </View>
 
       <View style={styles.grid}>
@@ -95,7 +97,7 @@ export function DatePicker({ value, onChange }: Props) {
           const isToday = key === todayKey;
           return (
             <View key={key} style={styles.cell}>
-              <Pressable
+              <PressableScale
                 onPress={() => onChange(key)}
                 disabled={disabled}
                 accessibilityRole="button"
@@ -123,20 +125,20 @@ export function DatePicker({ value, onChange }: Props) {
                 >
                   {day}
                 </Text>
-              </Pressable>
+              </PressableScale>
             </View>
           );
         })}
       </View>
 
       {value ? (
-        <Pressable
+        <PressableScale
           onPress={() => onChange(null)}
           style={styles.clear}
           accessibilityRole="button"
         >
           <Text style={styles.clearText}>{t.subjects.clearDate}</Text>
-        </Pressable>
+        </PressableScale>
       ) : null}
     </View>
   );

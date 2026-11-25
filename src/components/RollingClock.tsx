@@ -10,7 +10,7 @@ import Animated, {
 import { useTheme } from "../context/ThemeContext";
 import { fonts } from "../theme";
 
-const ROLL_MS = 280;
+const ROLL_MS = 220;
 
 // 1 = digits roll up (counting down), -1 = roll down (reset, or a longer session).
 type Dir = 1 | -1;

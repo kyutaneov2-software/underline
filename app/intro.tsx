@@ -1,15 +1,9 @@
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DatePicker } from "../src/components/DatePicker";
+import { LogoMark } from "../src/components/LogoMark";
 import { MAX_SUBJECT_NAME, SUBJECT_COLORS } from "../src/config";
 import { useSettings } from "../src/context/SettingsContext";
 import { useSubjects } from "../src/context/SubjectsContext";
@@ -19,7 +13,8 @@ import { tone } from "../src/lib/colors";
 import { formatDateLong } from "../src/lib/dates";
 import { formatDuration } from "../src/lib/format";
 import { t } from "../src/strings";
-import { fonts, radius, space, type Palette } from "../src/theme";
+import { centered, fonts, radius, space, type Palette } from "../src/theme";
+import { PressableScale } from "../src/components/PressableScale";
 
 type Draft = { name: string; color: string; examDate: string | null };
 
@@ -118,7 +113,10 @@ export default function IntroScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root} edges={["top", "bottom"]}>
+    <SafeAreaView
+      style={styles.root}
+      edges={["top", "bottom", "left", "right"]}
+    >
       <View style={styles.top}>
         <View style={styles.progress}>
           {Array.from({ length: STEPS }, (_, i) => (
@@ -128,9 +126,9 @@ export default function IntroScreen() {
             />
           ))}
         </View>
-        <Pressable onPress={skip} hitSlop={8} accessibilityRole="button">
+        <PressableScale onPress={skip} hitSlop={8} accessibilityRole="button">
           <Text style={styles.skip}>{t.intro.skip}</Text>
-        </Pressable>
+        </PressableScale>
       </View>
 
       <ScrollView
@@ -140,6 +138,9 @@ export default function IntroScreen() {
       >
         {step === 0 ? (
           <>
+            <View style={styles.logo}>
+              <LogoMark size={40} />
+            </View>
             <Text style={styles.title}>{t.intro.step1Title}</Text>
             <Text style={styles.note}>{t.intro.step1Note}</Text>
 
@@ -157,13 +158,13 @@ export default function IntroScreen() {
                 returnKeyType="done"
                 style={styles.input}
               />
-              <Pressable
+              <PressableScale
                 onPress={() => addDraft(input)}
                 style={styles.addBtn}
                 accessibilityRole="button"
               >
                 <Text style={styles.addBtnText}>{t.intro.add}</Text>
-              </Pressable>
+              </PressableScale>
             </View>
             {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -171,14 +172,14 @@ export default function IntroScreen() {
               {t.intro.suggestions
                 .filter((name) => !exists(name))
                 .map((name) => (
-                  <Pressable
+                  <PressableScale
                     key={name}
                     onPress={() => addDraft(name)}
                     style={styles.chip}
                     accessibilityRole="button"
                   >
                     <Text style={styles.chipText}>{name}</Text>
-                  </Pressable>
+                  </PressableScale>
                 ))}
             </View>
 
@@ -192,13 +193,13 @@ export default function IntroScreen() {
                     ]}
                   />
                   <Text style={styles.listName}>{d.name}</Text>
-                  <Pressable
+                  <PressableScale
                     onPress={() => removeDraft(i)}
                     hitSlop={8}
                     accessibilityRole="button"
                   >
                     <Text style={styles.listAction}>{t.intro.remove}</Text>
-                  </Pressable>
+                  </PressableScale>
                 </View>
               ))}
             </View>
@@ -211,7 +212,7 @@ export default function IntroScreen() {
             <Text style={styles.note}>{t.intro.step2Note}</Text>
             <View style={styles.chips}>
               {GOAL_CHOICES.map((min) => (
-                <Pressable
+                <PressableScale
                   key={min}
                   onPress={() => setGoal(min)}
                   style={[styles.chip, goal === min && styles.chipOn]}
@@ -219,7 +220,7 @@ export default function IntroScreen() {
                   accessibilityState={{ selected: goal === min }}
                 >
                   <Text style={styles.chipText}>{formatDuration(min)}</Text>
-                </Pressable>
+                </PressableScale>
               ))}
             </View>
           </>
@@ -232,7 +233,7 @@ export default function IntroScreen() {
             <View style={styles.list}>
               {drafts.map((d, i) => (
                 <View key={d.name}>
-                  <Pressable
+                  <PressableScale
                     onPress={() => setOpenDate(openDate === i ? null : i)}
                     style={styles.listRow}
                     accessibilityRole="button"
@@ -247,7 +248,7 @@ export default function IntroScreen() {
                     <Text style={styles.listAction}>
                       {d.examDate ? formatDateLong(d.examDate) : t.intro.noDate}
                     </Text>
-                  </Pressable>
+                  </PressableScale>
                   {openDate === i ? (
                     <DatePicker
                       value={d.examDate}
@@ -264,15 +265,15 @@ export default function IntroScreen() {
 
       <View style={styles.footer}>
         {step > 0 ? (
-          <Pressable
+          <PressableScale
             onPress={() => setStep((s) => s - 1)}
             style={styles.backBtn}
             accessibilityRole="button"
           >
             <Text style={styles.backText}>{t.intro.back}</Text>
-          </Pressable>
+          </PressableScale>
         ) : null}
-        <Pressable
+        <PressableScale
           onPress={step === STEPS - 1 ? finish : next}
           disabled={saving}
           style={[styles.primary, saving && styles.primaryOff]}
@@ -281,7 +282,7 @@ export default function IntroScreen() {
           <Text style={styles.primaryText}>
             {step === STEPS - 1 ? t.intro.finish : t.intro.next}
           </Text>
-        </Pressable>
+        </PressableScale>
       </View>
     </SafeAreaView>
   );
@@ -291,6 +292,7 @@ const makeStyles = (c: Palette) =>
   StyleSheet.create({
     root: { flex: 1, backgroundColor: c.bg },
     top: {
+      ...centered,
       flexDirection: "row",
       alignItems: "center",
       gap: space.lg,
@@ -301,7 +303,8 @@ const makeStyles = (c: Palette) =>
     segment: { flex: 1, height: 3, borderRadius: 2, backgroundColor: c.line },
     segmentOn: { backgroundColor: c.accent },
     skip: { color: c.muted, fontFamily: fonts.medium, fontSize: 15 },
-    content: { padding: space.lg, paddingTop: space.xl },
+    content: { ...centered, padding: space.lg, paddingTop: space.lg },
+    logo: { alignSelf: "flex-start", marginBottom: space.md },
     title: {
       color: c.ink,
       fontFamily: fonts.bold,
@@ -361,7 +364,7 @@ const makeStyles = (c: Palette) =>
       alignItems: "center",
       justifyContent: "center",
     },
-    chipOn: { borderColor: c.ink, borderWidth: 1.5 },
+    chipOn: { borderColor: c.accent, backgroundColor: c.accentSoft },
     chipText: { color: c.ink, fontFamily: fonts.medium, fontSize: 14 },
     list: { marginTop: space.lg },
     listRow: {
@@ -381,6 +384,7 @@ const makeStyles = (c: Palette) =>
     },
     listAction: { color: c.muted, fontFamily: fonts.regular, fontSize: 14 },
     footer: {
+      ...centered,
       flexDirection: "row",
       gap: space.sm,
       paddingHorizontal: space.lg,

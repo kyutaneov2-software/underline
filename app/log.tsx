@@ -1,13 +1,6 @@
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Alert,
-  Pressable,
-  SectionList,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Alert, SectionList, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../src/context/ThemeContext";
 import {
@@ -20,7 +13,8 @@ import { tone } from "../src/lib/colors";
 import { addDays, toDateKey } from "../src/lib/dates";
 import { formatDuration } from "../src/lib/format";
 import { t } from "../src/strings";
-import { fonts, radius, space, type Palette } from "../src/theme";
+import { centered, fonts, radius, space, type Palette } from "../src/theme";
+import { PressableScale } from "../src/components/PressableScale";
 
 type Section = { title: string; totalSec: number; data: SessionLogItem[] };
 
@@ -87,16 +81,19 @@ export default function LogScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root} edges={["top", "bottom"]}>
+    <SafeAreaView
+      style={styles.root}
+      edges={["top", "bottom", "left", "right"]}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>{t.log.title}</Text>
-        <Pressable
+        <PressableScale
           onPress={() => router.back()}
           hitSlop={8}
           accessibilityRole="button"
         >
           <Text style={styles.back}>{t.log.back}</Text>
-        </Pressable>
+        </PressableScale>
       </View>
 
       <SectionList
@@ -121,7 +118,7 @@ export default function LogScreen() {
           </View>
         )}
         renderItem={({ item }) => (
-          <Pressable
+          <PressableScale
             onLongPress={() => confirmDelete(item)}
             style={styles.row}
             accessibilityHint={t.log.hint}
@@ -155,7 +152,7 @@ export default function LogScreen() {
                 <Text style={styles.early}>{t.log.stoppedEarly}</Text>
               ) : null}
             </View>
-          </Pressable>
+          </PressableScale>
         )}
       />
     </SafeAreaView>
@@ -179,8 +176,13 @@ const makeStyles = (c: Palette) =>
       letterSpacing: -0.5,
     },
     back: { color: c.muted, fontFamily: fonts.medium, fontSize: 15 },
-    content: { padding: space.lg, paddingBottom: space.xl },
-    emptyWrap: { flexGrow: 1, justifyContent: "center", padding: space.xl },
+    content: { ...centered, padding: space.lg, paddingBottom: space.xl },
+    emptyWrap: {
+      ...centered,
+      flexGrow: 1,
+      justifyContent: "center",
+      padding: space.xl,
+    },
     empty: {
       color: c.muted,
       fontFamily: fonts.regular,

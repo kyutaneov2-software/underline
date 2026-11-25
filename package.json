@@ -5,7 +5,9 @@
   "dependencies": {
     "@expo-google-fonts/space-grotesk": "^0.4.1",
     "@expo/ui": "~58.0.29",
+    "@expo/vector-icons": "^15.0.2",
     "expo": "~58.0.26",
+    "expo-audio": "~58.0.12",
     "expo-constants": "~58.0.16",
     "expo-device": "~58.0.5",
     "expo-font": "~58.0.12",
